@@ -20,7 +20,7 @@ A neural network is defined as an arbitrary collection of neurons as defined in 
 ### Graphical interface
 - `gui.py`
 
-The I-V curve shaping graphical interface for controlling the neuronal behavior as detailed in [Ribar and Sepulchre, 2019](https://arxiv.org/abs/1805.05696). The file provides an interface for controlling the parameters of the 4-current bursting model with a live plot of the behavior and the corresponding I-V curves. An extended interface for controlling a 2-neuron network with excitatory or inhibitory connections is provided in `hco_gui.py`.
+The I-V curve shaping graphical interface for controlling the neuronal behavior as detailed in [Ribar and Sepulchre, 2019](https://arxiv.org/abs/1805.05696). The file provides an interface for controlling the parameters of the 4-current bursting model with a live plot of the behavior and the corresponding I-V curves.
 
 Additionally, a graphical interface for controlling an equivalent conductance-based model ([Ribar and Sepulchre, 2020](https://arxiv.org/abs/2011.04441)) with 4 activating conductances is provided in `gui_conductance.py`.
 
