@@ -198,54 +198,9 @@ def update_iapp(val):
     
     update_IV_curves()
 
-def update_fast1(val):
-    global i1, I_fast, I_slow, I_ultraslow
-    i1.a = -val
-    
+def update_val(val, update_method):
+    update_method(val)
     update_IV_curves()
-     
-def update_fast2(val):
-    global i1, I_fast, I_slow, I_ultraslow
-    i1.voff = val
-    
-    update_IV_curves()
-    
-def update_slow11(val):
-    global i2, I_fast, I_slow, I_ultraslow
-    i2.a = val
-    
-    update_IV_curves()
-    
-def update_slow12(val):
-    global i2, I_fast, I_slow, I_ultraslow
-    i2.voff = val
-    
-    update_IV_curves()
-        
-def update_slow21(val):
-    global i3, I_fast, I_slow, I_ultraslow
-    i3.a = -val
-    
-    update_IV_curves()
-    
-def update_slow22(val):
-    global i3, I_fast, I_slow, I_ultraslow
-    i3.voff = val
-    
-    update_IV_curves()
-
-def update_ultraslow1(val):
-    global i4, I_fast, I_slow, I_ultraslow
-    i4.a = val
-        
-    update_IV_curves()
-    
-def update_ultraslow2(val):
-    global i4, I_fast, I_slow, I_ultraslow
-    i4.voff = val
-
-    update_IV_curves()
-    
     
 def pulse(event):
     global pulse_on, tend, i_app
@@ -295,35 +250,39 @@ axsim.set_ylabel('V')
 
 # Sliders for fast negative conductance
 axf1 = plt.axes([0.1, 0.3, 0.3, 0.03])
-slider_fast1 = Slider(axf1, 'Gain', 0, 4, valinit = -a_f)
-slider_fast1.on_changed(update_fast1)
+slider_i1_a = Slider(axf1, 'Gain', 0, 4, valinit = -a_f)
+slider_i1_a.on_changed(lambda val: update_val(-val, i1.update_a))
+
 axf2 = plt.axes([0.1, 0.25, 0.3, 0.03])
-slider_fast2 = Slider(axf2, '$V_{off}$', -2, 2, valinit = voff_f)
-slider_fast2.on_changed(update_fast2)
+slider_i1_voff = Slider(axf2, '$V_{off}$', -2, 2, valinit = voff_f)
+slider_i1_voff.on_changed(lambda val: update_val(val, i1.update_voff))
 
 # Sliders for slow positive conductance
 axs11 = plt.axes([0.1, 0.15, 0.3, 0.03])
-slider_slow11 = Slider(axs11, 'Gain', 0, 4, valinit = a_s1)
-slider_slow11.on_changed(update_slow11)
+slider_i2_a = Slider(axs11, 'Gain', 0, 4, valinit = a_s1)
+slider_i2_a.on_changed(lambda val: update_val(val, i2.update_a))
+
 axs12 = plt.axes([0.1, 0.1, 0.3, 0.03])
-slider_slow12 = Slider(axs12, '$V_{off}$', -2, 2, valinit = voff_s1)
-slider_slow12.on_changed(update_slow12)
+slider_i2_voff = Slider(axs12, '$V_{off}$', -2, 2, valinit = voff_s1)
+slider_i2_voff.on_changed(lambda val: update_val(val, i2.update_voff))
 
 # Sliders for slow negative conductance
 axs21 = plt.axes([0.6, 0.3, 0.3, 0.03])
-slider_slow21 = Slider(axs21, 'Gain', 0, 4, valinit = -a_s2)
-slider_slow21.on_changed(update_slow21)
+slider_i3_a = Slider(axs21, 'Gain', 0, 4, valinit = -a_s2)
+slider_i3_a.on_changed(lambda val: update_val(-val, i3.update_a))
+
 axs22 = plt.axes([0.6, 0.25, 0.3, 0.03])
-slider_slow22 = Slider(axs22, '$V_{off}$', -2, 2, valinit = voff_s2)
-slider_slow22.on_changed(update_slow22)
+slider_i3_voff = Slider(axs22, '$V_{off}$', -2, 2, valinit = voff_s2)
+slider_i3_voff.on_changed(lambda val: update_val(val, i3.update_voff))
 
 # Sliders for ultraslow positive conductance
 axus1 = plt.axes([0.6, 0.15, 0.3, 0.03])
-slider_ultraslow1 = Slider(axus1, 'Gain', 0, 4, valinit = a_us)
-slider_ultraslow1.on_changed(update_ultraslow1)
+slider_i4_a = Slider(axus1, 'Gain', 0, 4, valinit = a_us)
+slider_i4_a.on_changed(lambda val: update_val(val, i4.update_a))
+
 axus2 = plt.axes([0.6, 0.1, 0.3, 0.03])
-slider_ultraslow2 = Slider(axus2, '$V_{off}$', -2, 2, valinit = voff_us)
-slider_ultraslow2.on_changed(update_ultraslow2)
+slider_i4_voff = Slider(axus2, '$V_{off}$', -2, 2, valinit = voff_us)
+slider_i4_voff.on_changed(lambda val: update_val(val, i4.update_voff))
 
 # Slider for Iapp
 axiapp = plt.axes([0.1, 0.02, 0.5, 0.03])

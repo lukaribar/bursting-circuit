@@ -126,6 +126,12 @@ class Neuron:
             
         def out(self, V):
             return (self.a * tanh(V - self.voff))
+        
+        def update_a(self, a):
+            self.a = a
+            
+        def update_voff(self, voff):
+            self.voff = voff
             
     class ConductanceElement:
         """
@@ -154,6 +160,12 @@ class Neuron:
                    
             def out(self, V):
                 return sigmoid(V - self.voff, self.k)
+            
+            def update_voff(self, voff):
+                self.voff = voff
+                
+            def update_k(self, k):
+                self.k = k
         
         # Add a gating variable to the conductance element
         def add_gate(self, k, voff, timescale, v0 = None):
@@ -172,6 +184,12 @@ class Neuron:
             for x in self.gates:
                 iout *= x.outx(y)
             return iout
+        
+        def update_g_max(self, g_max):
+            self.g_max = g_max
+            
+        def update_E_rev(self, E_rev):
+            self.E_rev = E_rev
         
         def IV(self, V, tau, Vrest = 0):
             I = self.g_max * (V - self.E_rev)

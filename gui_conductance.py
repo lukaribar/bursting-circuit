@@ -63,13 +63,13 @@ tus = 20*20
 neuron = Neuron()
 R = neuron.add_conductance(1)
 i1 = neuron.add_conductance(g1, E_rev1)
-i1.add_gate(k1, voff1, tf)
+x1 = i1.add_gate(k1, voff1, tf)
 i2 = neuron.add_conductance(g2, E_rev2)
-i2.add_gate(k2, voff2, ts)
+x2 = i2.add_gate(k2, voff2, ts)
 i3 = neuron.add_conductance(g3, E_rev3)
-i3.add_gate(k3, voff3, ts)
+x3 = i3.add_gate(k3, voff3, ts)
 i4 = neuron.add_conductance(g4, E_rev4)
-i4.add_gate(k4, voff4, tus)
+x4 = i4.add_gate(k4, voff4, tus)
 
 # **** UPDATE I-V CURVES ****
 def update_IV_curves():
@@ -232,7 +232,7 @@ def update_fast1(val):
      
 def update_fast2(val):
     global i1, I_fast, I_slow, I_ultraslow
-    i1.gates[0].voff = val
+    x1.voff = val
     
     update_IV_curves()
     
@@ -244,7 +244,7 @@ def update_slow11(val):
     
 def update_slow12(val):
     global i2, I_fast, I_slow, I_ultraslow
-    i2.gates[0].voff = val
+    x2.voff = val
     
     update_IV_curves()
         
@@ -256,7 +256,7 @@ def update_slow21(val):
     
 def update_slow22(val):
     global i3, I_fast, I_slow, I_ultraslow
-    i3.gates[0].voff = val
+    x3.voff = val
     
     update_IV_curves()
 
@@ -268,7 +268,7 @@ def update_ultraslow1(val):
     
 def update_ultraslow2(val):
     global i4, I_fast, I_slow, I_ultraslow
-    i4.gates[0].voff = val
+    x4.voff = val
 
     update_IV_curves()
     
