@@ -166,7 +166,7 @@ class GUI:
         
     def add_IV_curve(self, name, timescale, coords):
         self.IV_size += 1
-        ax = fig.add_subplot(2, 3, self.IV_size)
+        ax = self.fig.add_subplot(2, 3, self.IV_size)
         ax.set_position(coords)
         ax.set_xlabel('V')
         ax.set_ylabel('I')
@@ -194,13 +194,14 @@ class GUI:
         self.i_app = lambda t: val
         self.update_IV_curves()
         
-    def update_val()
+    def update_val(self, val, update_method):
+        update_method(val)
+        self.update_IV_curves()
+        
+    def add_slider(self, coords, val_min, val_max):
+        
 
 # **** FUNCTIONS TO UPDATE PARAMETERS ON GUI CHANGES *************************
-
-def update_val(val, update_method):
-    update_method(val)
-    update_IV_curves()
     
 def pulse(event):
     global pulse_on, tend, i_app
@@ -223,11 +224,6 @@ def pause(event):
         button_pause.label.set_text('Pause')
 
 # **** DRAW GRAPHICAL USER INTERFACE *****************************************
-
-# Close pre-existing figures
-plt.close("all")
-
-fig = plt.figure()
 
 # Fast I-V curve
 #axf = fig.add_subplot(2, 3, 1)
