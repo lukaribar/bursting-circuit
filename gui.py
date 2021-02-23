@@ -153,6 +153,8 @@ class GUI:
         self.neuron = neuron
         
         self.V = np.arange(self.vmin,self.vmax,self.dv)
+        self.i_app_const = 0
+        self.i_app = lambda t: self.i_app_const
         
         self.IV_curves = []
         self.IV_size = 0
@@ -160,59 +162,41 @@ class GUI:
         # Create empty plot
         plt.close("all")
         self.fig = plt.figure()
+        self.axs_iv = []
         
     def add_IV_curve(self, name, timescale, coords):
+        self.IV_size += 1
+        ax = fig.add_subplot(2, 3, self.IV_size)
+        ax.set_position(coords)
+        ax.set_xlabel('V')
+        ax.set_ylabel('I')
+        ax.set_title(name)
         
+        self.axs_iv.append(ax)
+        
+        self.IV_curves.append(self.IV_curve(self.neuron, timescale, self.V,
+                                            [self.colors[0], self.colors[self.IV_size]]))
+        
+    def update_IV_curves(self):
+        for iv_curve, ax in zip(self.IV_curves, self.axs_iv):
+            ax.cla()
+            for s in iv_curve.segments:
+                i1 = s.start
+                i2 = s.end
+                col = s.color
+                ax.plot(self.V[i1:i2], iv_curve.I[i1:i2], col)
                 
-
-# **** FUNCTIONS FOR PLOTTING I-V CURVES *************************************
-         
-def plot_fast():
-    axf.cla()
-    axf.set_xlabel('V')
-    axf.set_ylabel('I')
-    axf.set_title('Fast')
-
-    for el in fast_vector:
-        i1 = el[0]
-        i2 = el[1]
-        col = el[2]
-        axf.plot(V[i1:i2], I_fast[i1:i2], col)
-        
-def plot_slow():
-    axs.cla()
-    axs.set_xlabel('V')
-    axs.set_ylabel('I')
-    axs.set_title('Slow')
-
-    for el in slow_vector:
-        i1 = el[0]
-        i2 = el[1]
-        col = el[2]
-        axs.plot(V[i1:i2], I_slow[i1:i2], col)        
-
-def plot_ultraslow():
-    axus.cla()
-    axus.set_xlabel('V')
-    axus.set_ylabel('I')
-    axus.set_title('Ultra-slow')
-
-    for el in slow_vector:
-        i1 = el[0]
-        i2 = el[1]
-        col = el[2]
-        axus.plot(V[i1:i2], I_ultraslow[i1:i2], col)
+        # Add Iapp line to the last IV curve
+        self.axs_iv[-1].plot(self.V, np.ones(len(self.V)) * self.i_app_const,'C2')
     
-    axus.plot(V, np.ones(len(V)) * i_app_const,'C2')
+    def update_iapp(self, val):
+        self.i_app_const = val
+        self.i_app = lambda t: val
+        self.update_IV_curves()
+        
+    def update_val()
 
 # **** FUNCTIONS TO UPDATE PARAMETERS ON GUI CHANGES *************************
-
-def update_iapp(val):
-    global i_app_const, i_app
-    i_app_const = val
-    i_app = lambda t: i_app_const
-    
-    update_IV_curves()
 
 def update_val(val, update_method):
     update_method(val)
@@ -246,23 +230,23 @@ plt.close("all")
 fig = plt.figure()
 
 # Fast I-V curve
-axf = fig.add_subplot(2, 3, 1)
-axf.set_position([0.1, 0.75, 0.2, 0.2])
+#axf = fig.add_subplot(2, 3, 1)
+#axf.set_position([0.1, 0.75, 0.2, 0.2])
 
 # Slow I-V curve
-axs = fig.add_subplot(2, 3, 2)
-axs.set_position([0.4, 0.75, 0.2, 0.2])
+#axs = fig.add_subplot(2, 3, 2)
+#axs.set_position([0.4, 0.75, 0.2, 0.2])
 
 # Ultraslow I-V curve
-axus = fig.add_subplot(2, 3, 3)
-axus.set_position([0.7, 0.75, 0.2, 0.2])
+#axus = fig.add_subplot(2, 3, 3)
+#axus.set_position([0.7, 0.75, 0.2, 0.2])
 
 # Time - Voltage plot
-axsim = fig.add_subplot(2, 3, 4)
-axsim.set_position([0.1, 0.45, 0.8, 0.2])
-axsim.set_ylim((-5, 5))
-axsim.set_xlabel('Time')
-axsim.set_ylabel('V')
+#axsim = fig.add_subplot(2, 3, 4)
+#xsim.set_position([0.1, 0.45, 0.8, 0.2])
+#axsim.set_ylim((-5, 5))
+#axsim.set_xlabel('Time')
+#axsim.set_ylabel('V')
 
 # Sliders for fast negative conductance
 axf1 = plt.axes([0.1, 0.3, 0.3, 0.03])
