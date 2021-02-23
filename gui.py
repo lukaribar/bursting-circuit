@@ -54,100 +54,116 @@ i2 = neuron.add_current(a_s1, voff_s1, ts) # slow positive conductance
 i3 = neuron.add_current(a_s2, voff_s2, ts) # slow negative conductance
 i4 = neuron.add_current(a_us, voff_us, tus) # ultraslow positive conductance
 
-# **** UPDATE I-V CURVES ****
-def update_IV_curves():
-    global I_fast, I_slow, I_ultraslow
-    
-    # Update I-V curves
-    I_fast = neuron.IV(V, tf)
-    I_slow = neuron.IV(V, ts)
-    I_ultraslow = neuron.IV(V, tus)
-    
-    # Update +/- slope sections
-    update_fast_vector()
-    update_slow_vector()
-    
-    # Plot the I-V curves
-    plot_fast()
-    plot_slow()
-    plot_ultraslow()
-
-# **** FUNCTIONS THAT TRACK SLOPE CHANGES IN THE I-V CURVES ******************
-
-def update_fast_vector():
-    # Create a list of sections for the fast I-V curve
-    
-    global fast_vector # List of fast sections
-    global fast_index1, fast_index2 # Region of negative conductance
-    
-    fast_vector = [] 
-    
-    # Find points where the slope changes
-    dIdV = np.diff(I_fast)
-    indices = np.where(np.diff(np.sign(dIdV)) != 0)
-    indices = indices[0]
-    
-    indices = np.append(indices, V.size - 1)
-    
-    # In case the curve is monotone
-    fast_index1 = -1
-    fast_index2 = -1  
-
-    prev = 0
-    slope = dIdV[0] > 0
-    
-    # Iterate through each section
-    for i in np.nditer(indices):
-        if slope:
-            fast_vector.append([prev, i+2, 'C0']) # Fast +ve
-        else:
-            fast_vector.append([prev, i+2, 'C3']) # Fast -ve
-            fast_index1 = prev
-            fast_index2 = i
-        slope = not(slope) # Slope changes at each section
-        prev = i+1
+# DEFINE A CLASS WITH ALL PLOTTING FUNCTIONALITY
+class GUI:
+    """
+    Describe the class
+    """
+    _params = {'vmin': -3, 'vmax': 3.1, 'dv': 0.1}
+     
+    class IV_curve:
+        class Segment():
+            def __init__(self, start, end, color):
+                self.start = start
+                self.end = end
+                self.color = color
         
-
-def update_slow_vector():
-    # Create a list of sections for the slow/ultra-slow I-V curves
-    
-    global slow_vector # List of slow sections
-    
-    slow_vector = [] 
-    
-    # Find points where slope changes
-    dIdV = np.diff(I_slow)
-    indices = np.where(np.diff(np.sign(dIdV)) != 0)
-    indices = indices[0]
-    
-    indices = np.append(indices, V.size - 1)
-    
-    prev = 0
-    slope = dIdV[0] > 0
-    
-    # Iterate through each section    
-    for i in np.nditer(indices):
-        if slope:
-            # Slow +ve, plot regions of fast -ve with different color
-            i1 = fast_index1
-            i2 = fast_index2
-            if i1 < prev:
-                i1 = prev-1
-            if i1 > i:
-                i1 = i-1
-            if i2 < prev:
-                i2 = prev-1
-            if i2 > i:
-                i2 = i-1
-                
-            slow_vector.append([prev, i1+2, 'C0']) # Slow +ve, fast +ve
-            slow_vector.append([i1+1, i2+2, 'C3']) # Slow +ve, fast -ve
-            slow_vector.append([i2+1, i+2, 'C0']) # Slow +ve, fast +ve            
+        def __init__(self, neuron, timescale, V, cols):
+            self.neuron = neuron
+            self.timescale = timescale
+            self.V = V
+            self.cols = cols
+            self.segments = []
             
-        else:
-            slow_vector.append([prev, i+2, 'C1']) # Slow -ve
-        slope = not(slope)
-        prev = i+1
+            default_segments = [self.Segment(0, self.V.size-1, self.cols[0])]
+            
+            # Calculate the IV curve and the corresponding segments
+            self.update(default_segments)
+        
+        def update_cols(self, cols):
+            self.cols = cols
+        
+        def update(self, prev_segments = []):
+            self.I = self.neuron.IV(self.V, self.timescale)
+            self.segments = self.get_segments(prev_segments)
+            
+        def get_segments(self, prev_segments = []):
+            col = self.cols[1]
+            
+            # Find regions of -ve conductance
+            dIdV = np.diff(self.I)
+            indices = np.where(np.diff(np.sign(dIdV)) != 0)
+            indices = indices[0]
+            indices = np.append(indices, self.V.size - 1) # add ending point
+            
+            slope = dIdV[0] < 0 # True if initial slope -ve
+            
+            prev = 0
+            
+            new_segments = []
+            
+            # Get regions of -ve conductance
+            for i in np.nditer(indices):
+                # If region of -ve conductance
+                if slope:
+                    new_segments.append(self.Segment(prev, i, col))
+                slope = not(slope) # Sign changes after every point in indices
+                prev = i
+                
+            # If no preceeding faster IV curves
+            if (prev_segments == []):
+                prev_segments = self.default_segments
+                
+            # Insert new segments
+            for new_segment in new_segments:
+                # Find which prev_segments containt new_segment start and end
+                for idx, prev_segment in enumerate(prev_segments):
+                    if (prev_segment.start <= new_segment.start <= prev_segment.end):
+                        idx1 = idx
+                        col1 = prev_segment.color
+                        start1 = prev_segment.start
+                    if (prev_segment.start <= new_segment.end <= prev_segment.end):
+                        idx2 = idx
+                        col3 = prev_segment.color
+                        end3 = prev_segment.end
+                
+                # Delete the old segments between idx1 and idx2
+                del prev_segments[idx1:idx2+1]
+                
+                # start and end variables of new segments to insert
+                end1 = new_segment.start
+                start3 = new_segment.end
+                
+                # Insert new segments
+                prev_segments.insert(idx1, self.Segment(start3, end3, col3))
+                prev_segments.insert(idx1, new_segment)
+                prev_segments.insert(idx1, self.Segment(start1, end1, col1))
+                    
+            return prev_segments
+                
+    def __init__(self, neuron, **kwargs):
+        self.__dict__.update(self._params) # Default parameters
+        self.__dict__.update(kwargs) # Modify parameters
+        
+        # Colors of the +ve/-ve conductance regions
+        # First is +ve conductance, each successive is -ve conductance in next
+        # timescale
+        self.colors = ['C0', 'C3', 'C1', 'C4']
+        
+        self.neuron = neuron
+        
+        self.V = np.arange(self.vmin,self.vmax,self.dv)
+        
+        self.IV_curves = []
+        self.IV_size = 0
+        
+        # Create empty plot
+        plt.close("all")
+        self.fig = plt.figure()
+        
+    def add_IV_curve(self, name, timescale, coords):
+        
+                
 
 # **** FUNCTIONS FOR PLOTTING I-V CURVES *************************************
          
