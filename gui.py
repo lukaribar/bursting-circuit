@@ -47,7 +47,7 @@ class GUI:
         self.axs_iv = []
         
         # Add simulation plot
-        self.axsim = fig.add_subplot(2, 3, 4)
+        self.axsim = self.fig.add_subplot(2, 3, 4)
         self.axsim.set_position([0.1, 0.45, 0.8, 0.2]) # move this 
         self.axsim.set_ylim((-5, 5))
         self.axsim.set_xlabel('Time')
@@ -127,19 +127,18 @@ class GUI:
             return t, y
          
         # Comment Euler step or standard solver step depending on the method
-        while plt.fignum_exists(fig.number):
-            while pause_value:
-                plt.pause(0.01)
+        while plt.fignum_exists(self.fig.number):
+            #while pause_value:
+            #    plt.pause(0.01)
             
             st = time()
         
             last_t = t
             
-            # Check for pulse
             while t - last_t < sstep:
-                if pulse_on and (t > tend):
-                    i_app = lambda t: i_app_const
-                    pulse_on = False
+                #if pulse_on and (t > tend):
+                #    i_app = lambda t: i_app_const
+                #    pulse_on = False
                 
                 # Euler step
                 t,y = euler_step(odesys,t,y)
@@ -159,9 +158,9 @@ class GUI:
                 ydata.popleft()
         
             simuln.set_data(tdata, ydata)
-            axsim.set_xlim(tdata[-1] - tint, tdata[-1] + tint / 20)
-            fig.canvas.draw()
-            fig.canvas.flush_events()
+            self.axsim.set_xlim(tdata[-1] - tint, tdata[-1] + tint / 20)
+            self.fig.canvas.draw()
+            self.fig.canvas.flush_events()
     class IV_curve:
         class Segment():
             def __init__(self, start, end, color):
