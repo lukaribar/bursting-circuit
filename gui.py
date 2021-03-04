@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button
 import numpy as np
 
-from time import time
 from collections import deque
 
 from neuron_model import Neuron
@@ -66,6 +65,8 @@ class GUI:
         self.IV_curves.append(self.IV_curve(self.neuron, timescale, self.V,
                                             [self.colors[0], self.colors[self.IV_size]]))
         
+        self.update_IV_curves()
+        
     def update_IV_curves(self):
         for iv_curve, ax in zip(self.IV_curves, self.axs_iv):
             ax.cla()
@@ -73,10 +74,11 @@ class GUI:
                 i1 = s.start
                 i2 = s.end
                 col = s.color
-                ax.plot(self.V[i1:i2], iv_curve.I[i1:i2], col)
+                # Add +1 to end points to include them in the plot
+                ax.plot(self.V[i1:i2+1], iv_curve.I[i1:i2+1], col)
                 
         # Add Iapp line to the last IV curve
-        self.axs_iv[-1].plot(self.V, np.ones(len(self.V)) * self.i_app_const,'C2')
+        #self.axs_iv[-1].plot(self.V, np.ones(len(self.V)) * self.i_app_const,'C2')
     
     def update_iapp(self, val):
         self.i_app_const = val
@@ -109,7 +111,7 @@ class GUI:
         
         # Define ODE equation for the solvers
         def odesys(t, y):
-            return neuron.sys(i_app(t),y)
+            return neuron.sys(self.i_app(t),y)
         
         # Standard ODE solvers (RK45, BDF, etc) (import from scipy.integrate)
         #solver = BDF(odesys, 0, v0, np.inf, max_step=sstep)
@@ -130,8 +132,6 @@ class GUI:
         while plt.fignum_exists(self.fig.number):
             #while pause_value:
             #    plt.pause(0.01)
-            
-            st = time()
         
             last_t = t
             
@@ -193,8 +193,8 @@ class GUI:
             # Find regions of -ve conductance
             dIdV = np.diff(self.I)
             indices = np.where(np.diff(np.sign(dIdV)) != 0)
-            indices = indices[0]
-            indices = np.append(indices, self.V.size - 1) # add ending point
+            indices = indices[0] + 1 # +1 for the correct max/min points
+            indices = np.append(indices, self.V.size) # add ending point
             
             slope = dIdV[0] < 0 # True if initial slope -ve
             
@@ -255,17 +255,6 @@ voff_s2 = -0.9
 a_us = 1.5
 voff_us = -0.9
 
-# Initial constant input current
-i_app_const = -2
-i_app = lambda t: i_app_const
-
-# Initial values pulse
-pulse_on = False
-tend = 0
-
-# Initialize pause value
-pause_value = False
-
 # Define timescales
 tf = 0
 ts = 50
@@ -279,7 +268,11 @@ i2 = neuron.add_current(a_s1, voff_s1, ts) # slow positive conductance
 i3 = neuron.add_current(a_s2, voff_s2, ts) # slow negative conductance
 i4 = neuron.add_current(a_us, voff_us, tus) # ultraslow positive conductance
 
-# **** PLOT THE I-V CURVES AND SIMULATION DATA *******************************
+gui = GUI(neuron)
+gui.add_IV_curve("Fast", tf, [0.1, 0.75, 0.2, 0.2])
+gui.add_IV_curve("Slow", ts, [0.4, 0.75, 0.2, 0.2])
+#gui.add_IV_curve("Ultraslow", tus, [0.7, 0.75, 0.2, 0.2])
+#gui.run() # it runs faster when there is nothing else on the screen?
 
 
 
@@ -311,10 +304,6 @@ i4 = neuron.add_current(a_us, voff_us, tus) # ultraslow positive conductance
 #        button_pause.label.set_text('Pause')
 
 # **** DRAW GRAPHICAL USER INTERFACE *****************************************
-
-# Fast I-V curve
-#axf = fig.add_subplot(2, 3, 1)
-#axf.set_position([0.1, 0.75, 0.2, 0.2])
 
 # Slow I-V curve
 #axs = fig.add_subplot(2, 3, 2)
