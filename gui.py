@@ -110,7 +110,7 @@ class GUI:
         # Colors of the +ve/-ve conductance regions
         # First is +ve conductance, each successive is -ve conductance in next
         # timescale
-        self.colors = ['C0', 'C3', 'C1', 'C4']
+        self.colors = ['C0', 'C3', 'C1', 'C6']
         
         self.neuron = neuron # associate GUI with a neuron
         
@@ -185,11 +185,16 @@ class GUI:
         ax = plt.axes(coords)
         slider = Slider(ax, name, val_min, val_max, valinit = sign*val_init)
         slider.on_changed(lambda val: self.update_val(sign*val, update_method))
+        return slider
         
     def add_button(self, name, coords, on_press_method):
         ax = plt.axes(coords)
         button = Button(ax, name)
         button.on_clicked(on_press_method)
+        return button
+        
+    def add_label(self, x, y, text):
+        plt.figtext(x, y, text, horizontalalignment = 'center')
         
     def run(self):
         t0 = 0
@@ -353,6 +358,9 @@ tf = 0
 ts = 50
 tus = 50*50
 
+# Move this?
+i_app_const = 0
+
 # Define an empty neuron and then interconnect the elements
 neuron = Neuron()
 R = neuron.add_conductance(1)
@@ -362,23 +370,31 @@ i3 = neuron.add_current(a_s2, voff_s2, ts) # slow negative conductance
 i4 = neuron.add_current(a_us, voff_us, tus) # ultraslow positive conductance
 
 gui = GUI(neuron)
+
 gui.add_IV_curve("Fast", tf, [0.1, 0.75, 0.2, 0.2])
 gui.add_IV_curve("Slow", ts, [0.4, 0.75, 0.2, 0.2])
 gui.add_IV_curve("Ultraslow", tus, [0.7, 0.75, 0.2, 0.2])
-gui.add_slider("Gain", [0.1, 0.3, 0.3, 0.03], 0, 4, a_f, i1.update_a,sign=-1)
-#gui.run()
 
-# Sliders for fast negative conductance
-#axf1 = plt.axes([0.1, 0.3, 0.3, 0.03])
-#slider_i1_a = Slider(axf1, 'Gain', 0, 4, valinit = -a_f)
-#slider_i1_a.on_changed(lambda val: update_val(-val, i1.update_a))
+gui.add_label(0.25, 0.34, "Fast -ve")
+s1 = gui.add_slider("Gain", [0.1, 0.3, 0.3, 0.03], 0, 4, a_f, i1.update_a, sign=-1)
+s2 = gui.add_slider("$V_{off}$", [0.1, 0.25, 0.3, 0.03], -2, 2, voff_f, i1.update_voff)
 
-#axf2 = plt.axes([0.1, 0.25, 0.3, 0.03])
-#slider_i1_voff = Slider(axf2, '$V_{off}$', -2, 2, valinit = voff_f)
-#slider_i1_voff.on_changed(lambda val: update_val(val, i1.update_voff))
+gui.add_label(0.25, 0.19, "Slow +ve")
+s3 = gui.add_slider("Gain", [0.1, 0.15, 0.3, 0.03], 0, 4, a_s1, i2.update_a)
+s4 = gui.add_slider("$V_{off}$", [0.1, 0.1, 0.3, 0.03], -2, 2, voff_s1, i2.update_voff)
 
+gui.add_label(0.75, 0.34, "Slow -ve")
+s5 = gui.add_slider("Gain", [0.6, 0.3, 0.3, 0.03], 0, 4, a_s2, i3.update_a, sign=-1)
+s6 = gui.add_slider("$V_{off}$", [0.6, 0.25, 0.3, 0.03], -2, 2, voff_s2, i3.update_voff)
 
-        
+gui.add_label(0.75, 0.19, "UltraSlow +ve")
+s7 = gui.add_slider("Gain", [0.6, 0.15, 0.3, 0.03], 0, 4, a_us, i4.update_a)
+s8 = gui.add_slider("$V_{off}$", [0.6, 0.1, 0.3, 0.03], -2, 2, voff_us, i4.update_voff)
+
+s9 = gui.add_slider("$I_{app}$", [0.1, 0.02, 0.5, 0.03], -3, 3, i_app_const, gui.update_iapp)
+
+gui.run()
+
 
 # **** FUNCTIONS TO UPDATE PARAMETERS ON GUI CHANGES *************************
 
@@ -406,62 +422,6 @@ gui.add_slider("Gain", [0.1, 0.3, 0.3, 0.03], 0, 4, a_f, i1.update_a,sign=-1)
 
 # **** DRAW GRAPHICAL USER INTERFACE *****************************************
 
-# Slow I-V curve
-#axs = fig.add_subplot(2, 3, 2)
-#axs.set_position([0.4, 0.75, 0.2, 0.2])
-
-# Ultraslow I-V curve
-#axus = fig.add_subplot(2, 3, 3)
-#axus.set_position([0.7, 0.75, 0.2, 0.2])
-
-# Time - Voltage plot
-#axsim = fig.add_subplot(2, 3, 4)
-#xsim.set_position([0.1, 0.45, 0.8, 0.2])
-#axsim.set_ylim((-5, 5))
-#axsim.set_xlabel('Time')
-#axsim.set_ylabel('V')
-
-# Sliders for fast negative conductance
-#axf1 = plt.axes([0.1, 0.3, 0.3, 0.03])
-#slider_i1_a = Slider(axf1, 'Gain', 0, 4, valinit = -a_f)
-#slider_i1_a.on_changed(lambda val: update_val(-val, i1.update_a))
-
-#axf2 = plt.axes([0.1, 0.25, 0.3, 0.03])
-#slider_i1_voff = Slider(axf2, '$V_{off}$', -2, 2, valinit = voff_f)
-#slider_i1_voff.on_changed(lambda val: update_val(val, i1.update_voff))
-
-# Sliders for slow positive conductance
-#axs11 = plt.axes([0.1, 0.15, 0.3, 0.03])
-#slider_i2_a = Slider(axs11, 'Gain', 0, 4, valinit = a_s1)
-#slider_i2_a.on_changed(lambda val: update_val(val, i2.update_a))
-
-#axs12 = plt.axes([0.1, 0.1, 0.3, 0.03])
-#slider_i2_voff = Slider(axs12, '$V_{off}$', -2, 2, valinit = voff_s1)
-#slider_i2_voff.on_changed(lambda val: update_val(val, i2.update_voff))
-
-# Sliders for slow negative conductance
-#axs21 = plt.axes([0.6, 0.3, 0.3, 0.03])
-#slider_i3_a = Slider(axs21, 'Gain', 0, 4, valinit = -a_s2)
-#slider_i3_a.on_changed(lambda val: update_val(-val, i3.update_a))
-
-#axs22 = plt.axes([0.6, 0.25, 0.3, 0.03])
-#slider_i3_voff = Slider(axs22, '$V_{off}$', -2, 2, valinit = voff_s2)
-#slider_i3_voff.on_changed(lambda val: update_val(val, i3.update_voff))
-
-# Sliders for ultraslow positive conductance
-#axus1 = plt.axes([0.6, 0.15, 0.3, 0.03])
-#slider_i4_a = Slider(axus1, 'Gain', 0, 4, valinit = a_us)
-#slider_i4_a.on_changed(lambda val: update_val(val, i4.update_a))
-
-#axus2 = plt.axes([0.6, 0.1, 0.3, 0.03])
-#slider_i4_voff = Slider(axus2, '$V_{off}$', -2, 2, valinit = voff_us)
-#slider_i4_voff.on_changed(lambda val: update_val(val, i4.update_voff))
-
-# Slider for Iapp
-#axiapp = plt.axes([0.1, 0.02, 0.5, 0.03])
-#slider_iapp = Slider(axiapp, '$I_{app}$',-3, 3, valinit = i_app_const)
-#slider_iapp.on_changed(update_iapp)
-
 # Button for I_app = pulse(t)
 #axpulse_button = plt.axes([.675, 0.02, 0.1, 0.03])
 #pulse_button = Button(axpulse_button, 'Pulse')
@@ -472,9 +432,4 @@ gui.add_slider("Gain", [0.1, 0.3, 0.3, 0.03], 0, 4, a_f, i1.update_a,sign=-1)
 #button_pause = Button(axbutton, 'Pause')
 #button_pause.on_clicked(pause)
 
-# Labels for conductance sliders (ADD THIS)
-#plt.figtext(0.25, 0.34, 'Fast -ve', horizontalalignment = 'center')
-#plt.figtext(0.25, 0.19, 'Slow +ve', horizontalalignment = 'center')
-#plt.figtext(0.75, 0.34, 'Slow -ve', horizontalalignment = 'center')
-#plt.figtext(0.75, 0.19, 'Ultraslow +ve', horizontalalignment = 'center')
 
