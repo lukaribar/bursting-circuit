@@ -15,6 +15,87 @@ from collections import deque
 
 from neuron_model import Neuron
 
+class IV_curve:
+    """
+    Describe the class
+    """
+    class Segment():
+        def __init__(self, start, end, color):
+            self.start = start
+            self.end = end
+            self.color = color
+    
+    def __init__(self, neuron, timescale, V, cols):
+        self.neuron = neuron
+        self.timescale = timescale
+        self.V = V
+        self.cols = cols
+        self.segments = []
+                    
+        # Calculate the IV curve and the corresponding segments
+        self.update()
+    
+    def update(self, prev_segments = []):
+        # If no preceeding IV curves, put [Vmin, Vmax] as prev_segment
+        if (prev_segments == []):
+            prev_segments = [self.Segment(0, self.V.size-1, self.cols[0])]
+        
+        self.I = self.neuron.IV(self.V, self.timescale)
+        
+        col = self.cols[1] # color for -ve conductance
+        
+        # Find regions of -ve conductance
+        dIdV = np.diff(self.I)
+        indices = np.where(np.diff(np.sign(dIdV)) != 0)
+        indices = indices[0] + 1 # +1 for the correct max/min points
+        indices = np.append(indices, self.V.size) # add ending point
+        
+        slope = dIdV[0] < 0 # True if initial slope -ve
+        
+        prev = 0
+        
+        new_segments = []
+        
+        # Get regions of -ve conductance
+        for i in np.nditer(indices):
+            # If region of -ve conductance
+            if slope:
+                new_segments.append(self.Segment(prev, i, col))
+            slope = not(slope) # Sign changes after every point in indices
+            prev = i
+            
+        # Insert new segments
+        for new_segment in new_segments:
+            # Find which prev_segments containt new_segment start and end
+            for idx, prev_segment in enumerate(prev_segments):
+                if (prev_segment.start <= new_segment.start
+                    <= prev_segment.end):
+                    idx1 = idx
+                    col1 = prev_segment.color
+                    start1 = prev_segment.start
+                if (prev_segment.start <= new_segment.end <= prev_segment.end):
+                    idx2 = idx
+                    col3 = prev_segment.color
+                    end3 = prev_segment.end
+            
+            # Delete the old segments between idx1 and idx2
+            del prev_segments[idx1:idx2+1]
+            
+            # start and end variables of new segments to insert
+            end1 = new_segment.start
+            start3 = new_segment.end
+            
+            # Insert new segments
+            prev_segments.insert(idx1, self.Segment(start3, end3, col3))
+            prev_segments.insert(idx1, new_segment)
+            prev_segments.insert(idx1, self.Segment(start1, end1, col1))
+                
+        self.segments = prev_segments
+        
+    def get_segments(self):
+        return self.segments
+
+
 # DEFINE A CLASS WITH ALL PLOTTING FUNCTIONALITY
 class GUI:
     """
@@ -62,13 +143,22 @@ class GUI:
         
         self.axs_iv.append(ax)
         
-        self.IV_curves.append(self.IV_curve(self.neuron, timescale, self.V,
-                                            [self.colors[0], self.colors[self.IV_size]]))
+        self.IV_curves.append(IV_curve(self.neuron, timescale, self.V,
+                                            [self.colors[0],
+                                             self.colors[self.IV_size]]))
         
         self.update_IV_curves()
         
     def update_IV_curves(self):
-        for iv_curve, ax in zip(self.IV_curves, self.axs_iv):
+        for idx, (iv_curve, ax) in enumerate(zip(self.IV_curves, self.axs_iv)):
+            # Update the segments
+            if (idx > 0):
+                prev_segments = self.IV_curves[idx-1].get_segments()
+                iv_curve.update(prev_segments)
+            else:
+                iv_curve.update()
+            
+            # Plot
             ax.cla()
             for s in iv_curve.segments:
                 i1 = s.start
@@ -78,7 +168,8 @@ class GUI:
                 ax.plot(self.V[i1:i2+1], iv_curve.I[i1:i2+1], col)
                 
         # Add Iapp line to the last IV curve
-        #self.axs_iv[-1].plot(self.V, np.ones(len(self.V)) * self.i_app_const,'C2')
+        self.axs_iv[-1].plot(self.V, np.ones(len(self.V)) * self.i_app_const,
+                   'C2')
     
     def update_iapp(self, val):
         self.i_app_const = val
@@ -89,7 +180,8 @@ class GUI:
         update_method(val)
         self.update_IV_curves()
         
-    def add_slider(self, name, coords, val_min, val_max, val_init, update_method, sign = 1):
+    def add_slider(self, name, coords, val_min, val_max, val_init,
+                   update_method, sign = 1):
         ax = plt.axes(coords)
         slider = Slider(ax, name, val_min, val_max, valinit = sign*val_init)
         slider.on_changed(lambda val: self.update_val(sign*val, update_method))
@@ -162,6 +254,9 @@ class GUI:
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
     class IV_curve:
+        """
+        Describe the class
+        """
         class Segment():
             def __init__(self, start, end, color):
                 self.start = start
@@ -174,21 +269,18 @@ class GUI:
             self.V = V
             self.cols = cols
             self.segments = []
-            
-            default_segments = [self.Segment(0, self.V.size-1, self.cols[0])]
-            
+                        
             # Calculate the IV curve and the corresponding segments
-            self.update(default_segments)
-        
-        def update_cols(self, cols):
-            self.cols = cols
+            self.update()
         
         def update(self, prev_segments = []):
-            self.I = self.neuron.IV(self.V, self.timescale)
-            self.segments = self.get_segments(prev_segments)
+            # If no preceeding IV curves, put [Vmin, Vmax] as prev_segment
+            if (prev_segments == []):
+                prev_segments = [self.Segment(0, self.V.size-1, self.cols[0])]
             
-        def get_segments(self, prev_segments = []):
-            col = self.cols[1]
+            self.I = self.neuron.IV(self.V, self.timescale)
+            
+            col = self.cols[1] # color for -ve conductance
             
             # Find regions of -ve conductance
             dIdV = np.diff(self.I)
@@ -210,19 +302,17 @@ class GUI:
                 slope = not(slope) # Sign changes after every point in indices
                 prev = i
                 
-            # If no preceeding faster IV curves
-            if (prev_segments == []):
-                prev_segments = self.default_segments
-                
             # Insert new segments
             for new_segment in new_segments:
                 # Find which prev_segments containt new_segment start and end
                 for idx, prev_segment in enumerate(prev_segments):
-                    if (prev_segment.start <= new_segment.start <= prev_segment.end):
+                    if (prev_segment.start <= new_segment.start
+                        <= prev_segment.end):
                         idx1 = idx
                         col1 = prev_segment.color
                         start1 = prev_segment.start
-                    if (prev_segment.start <= new_segment.end <= prev_segment.end):
+                    if (prev_segment.start <= new_segment.end
+                        <= prev_segment.end):
                         idx2 = idx
                         col3 = prev_segment.color
                         end3 = prev_segment.end
@@ -239,7 +329,10 @@ class GUI:
                 prev_segments.insert(idx1, new_segment)
                 prev_segments.insert(idx1, self.Segment(start1, end1, col1))
                     
-            return prev_segments
+            self.segments = prev_segments
+            
+        def get_segments(self):
+            return self.segments
 
 plt.ion() # turn the interactive mode on
 
@@ -269,10 +362,10 @@ i3 = neuron.add_current(a_s2, voff_s2, ts) # slow negative conductance
 i4 = neuron.add_current(a_us, voff_us, tus) # ultraslow positive conductance
 
 gui = GUI(neuron)
-gui.add_IV_curve("Fast", tf, [0.1, 0.75, 0.2, 0.2])
-gui.add_IV_curve("Slow", ts, [0.4, 0.75, 0.2, 0.2])
+#gui.add_IV_curve("Fast", tf, [0.1, 0.75, 0.2, 0.2])
+#gui.add_IV_curve("Slow", ts, [0.4, 0.75, 0.2, 0.2])
 #gui.add_IV_curve("Ultraslow", tus, [0.7, 0.75, 0.2, 0.2])
-#gui.run() # it runs faster when there is nothing else on the screen?
+gui.run() # it runs faster when there is nothing else on the screen?
 
 
 
