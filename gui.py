@@ -101,7 +101,7 @@ class GUI:
     """
     Describe the class
     """
-    _params = {'vmin': -3, 'vmax': 3.1, 'dv': 0.1}
+    _params = {'vmin': -3, 'vmax': 3.1, 'dv': 0.1, 'i0': 0}
                  
     def __init__(self, neuron, **kwargs):
         self.__dict__.update(self._params) # Default parameters
@@ -115,7 +115,7 @@ class GUI:
         self.neuron = neuron # associate GUI with a neuron
         
         self.V = np.arange(self.vmin,self.vmax,self.dv)
-        self.i_app_const = 0
+        self.i_app_const = self.i0
         self.i_app = lambda t: self.i_app_const
         
         self.IV_curves = []
@@ -185,6 +185,11 @@ class GUI:
         ax = plt.axes(coords)
         slider = Slider(ax, name, val_min, val_max, valinit = sign*val_init)
         slider.on_changed(lambda val: self.update_val(sign*val, update_method))
+        return slider
+    
+    def add_iapp_slider(self, coords, val_min, val_max):
+        slider = self.add_slider("$I_{app}$", coords, val_min, val_max, self.i0, 
+                                 self.update_iapp)
         return slider
         
     def add_button(self, name, coords, on_press_method):
@@ -358,9 +363,6 @@ tf = 0
 ts = 50
 tus = 50*50
 
-# Move this?
-i_app_const = 0
-
 # Define an empty neuron and then interconnect the elements
 neuron = Neuron()
 R = neuron.add_conductance(1)
@@ -369,7 +371,7 @@ i2 = neuron.add_current(a_s1, voff_s1, ts) # slow positive conductance
 i3 = neuron.add_current(a_s2, voff_s2, ts) # slow negative conductance
 i4 = neuron.add_current(a_us, voff_us, tus) # ultraslow positive conductance
 
-gui = GUI(neuron)
+gui = GUI(neuron, i0 = -2)
 
 gui.add_IV_curve("Fast", tf, [0.1, 0.75, 0.2, 0.2])
 gui.add_IV_curve("Slow", ts, [0.4, 0.75, 0.2, 0.2])
@@ -391,7 +393,7 @@ gui.add_label(0.75, 0.19, "UltraSlow +ve")
 s7 = gui.add_slider("Gain", [0.6, 0.15, 0.3, 0.03], 0, 4, a_us, i4.update_a)
 s8 = gui.add_slider("$V_{off}$", [0.6, 0.1, 0.3, 0.03], -2, 2, voff_us, i4.update_voff)
 
-s9 = gui.add_slider("$I_{app}$", [0.1, 0.02, 0.5, 0.03], -3, 3, i_app_const, gui.update_iapp)
+s9 = gui.add_iapp_slider([0.1, 0.02, 0.5, 0.03], -3, 3)
 
 gui.run()
 
