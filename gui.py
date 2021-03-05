@@ -362,10 +362,10 @@ i3 = neuron.add_current(a_s2, voff_s2, ts) # slow negative conductance
 i4 = neuron.add_current(a_us, voff_us, tus) # ultraslow positive conductance
 
 gui = GUI(neuron)
-#gui.add_IV_curve("Fast", tf, [0.1, 0.75, 0.2, 0.2])
-#gui.add_IV_curve("Slow", ts, [0.4, 0.75, 0.2, 0.2])
-#gui.add_IV_curve("Ultraslow", tus, [0.7, 0.75, 0.2, 0.2])
-gui.run() # it runs faster when there is nothing else on the screen?
+gui.add_IV_curve("Fast", tf, [0.1, 0.75, 0.2, 0.2])
+gui.add_IV_curve("Slow", ts, [0.4, 0.75, 0.2, 0.2])
+gui.add_IV_curve("Ultraslow", tus, [0.7, 0.75, 0.2, 0.2])
+gui.run()
 
 
 
