@@ -25,7 +25,8 @@ class IV_curve:
             self.end = end
             self.color = color
     
-    def __init__(self, neuron, timescale, V, cols):
+    def __init__(self, name, neuron, timescale, V, cols):
+        self.name = name
         self.neuron = neuron
         self.timescale = timescale
         self.V = V
@@ -143,7 +144,7 @@ class GUI:
         
         self.axs_iv.append(ax)
         
-        self.IV_curves.append(IV_curve(self.neuron, timescale, self.V,
+        self.IV_curves.append(IV_curve(name, self.neuron, timescale, self.V,
                                             [self.colors[0],
                                              self.colors[self.IV_size]]))
         
@@ -160,6 +161,9 @@ class GUI:
             
             # Plot
             ax.cla()
+            ax.set_xlabel('V')
+            ax.set_ylabel('I')
+            ax.set_title(iv_curve.name)
             for s in iv_curve.segments:
                 i1 = s.start
                 i2 = s.end
