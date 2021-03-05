@@ -365,9 +365,17 @@ gui = GUI(neuron)
 gui.add_IV_curve("Fast", tf, [0.1, 0.75, 0.2, 0.2])
 gui.add_IV_curve("Slow", ts, [0.4, 0.75, 0.2, 0.2])
 gui.add_IV_curve("Ultraslow", tus, [0.7, 0.75, 0.2, 0.2])
-gui.run()
+gui.add_slider("Gain", [0.1, 0.3, 0.3, 0.03], 0, 4, a_f, i1.update_a,sign=-1)
+#gui.run()
 
+# Sliders for fast negative conductance
+#axf1 = plt.axes([0.1, 0.3, 0.3, 0.03])
+#slider_i1_a = Slider(axf1, 'Gain', 0, 4, valinit = -a_f)
+#slider_i1_a.on_changed(lambda val: update_val(-val, i1.update_a))
 
+#axf2 = plt.axes([0.1, 0.25, 0.3, 0.03])
+#slider_i1_voff = Slider(axf2, '$V_{off}$', -2, 2, valinit = voff_f)
+#slider_i1_voff.on_changed(lambda val: update_val(val, i1.update_voff))
 
 
         
