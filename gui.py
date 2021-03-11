@@ -25,9 +25,9 @@ class IV_curve:
             self.end = end
             self.color = color
     
-    def __init__(self, name, neuron, timescale, V, cols):
-        self.name = name
+    def __init__(self, neuron, name, timescale, V, cols):
         self.neuron = neuron
+        self.name = name
         self.timescale = timescale
         self.V = V
         self.cols = cols
@@ -104,7 +104,7 @@ class GUI:
     """
     _params = {'vmin': -3, 'vmax': 3.1, 'dv': 0.1, 'i0': 0}
                  
-    def __init__(self, neuron, **kwargs):
+    def __init__(self, system, **kwargs):
         self.__dict__.update(self._params) # Default parameters
         self.__dict__.update(kwargs) # Modify parameters
         
@@ -113,7 +113,7 @@ class GUI:
         # timescale
         self.colors = ['C0', 'C3', 'C1', 'C6']
         
-        self.neuron = neuron # associate GUI with a neuron
+        self.system = system # associate GUI with a neuron or a network
         
         self.V = np.arange(self.vmin,self.vmax,self.dv)
         self.i_app_const = self.i0
@@ -134,7 +134,7 @@ class GUI:
         self.axsim.set_xlabel('Time')
         self.axsim.set_ylabel('V')
         
-    def add_IV_curve(self, name, timescale, coords):
+    def add_IV_curve(self, neuron, name, timescale, coords):
         self.IV_size += 1
         ax = self.fig.add_subplot(2, 3, self.IV_size)
         ax.set_position(coords)
@@ -144,7 +144,7 @@ class GUI:
         
         self.axs_iv.append(ax)
         
-        self.IV_curves.append(IV_curve(name, self.neuron, timescale, self.V,
+        self.IV_curves.append(IV_curve(neuron, name, timescale, self.V,
                                             [self.colors[0],
                                              self.colors[self.IV_size]]))
         
@@ -205,19 +205,28 @@ class GUI:
     def add_label(self, x, y, text):
         plt.figtext(x, y, text, horizontalalignment = 'center')
         
-    def run(self):
+    def run(self, idx_list = [0]):
         t0 = 0
-        v0 = self.neuron.get_init_conditions()
+        v0 = self.system.get_init_conditions()
         
         sstep = 100 # draw sstep length of data in a single call
         tint = 5000 # time window plotted
         
-        tdata, ydata = deque(), deque()
-        simuln, = self.axsim.plot(tdata, ydata)
+        #tdata, ydata = deque(), deque()
+        #simuln, = self.axsim.plot(tdata, ydata)
+        
+        tdata = deque()
+        ydata_list = []
+        simuln_list = []
+        for idx in idx_list:
+            ydata = deque()
+            line, = self.axsim.plot(tdata, ydata)
+            simuln_list.append(line)
+            ydata_list.append(ydata)
         
         # Define ODE equation for the solvers
         def odesys(t, y):
-            return neuron.sys(self.i_app(t),y)
+            return self.system.sys(self.i_app(t),y)
         
         # Standard ODE solvers (RK45, BDF, etc) (import from scipy.integrate)
         #solver = BDF(odesys, 0, v0, np.inf, max_step=sstep)
@@ -257,13 +266,16 @@ class GUI:
         #            raise ValueError('solver terminated with message: %s ' % msg)
                 
                 tdata.append(t)
-                ydata.append(y[0])
+                for i, idx in enumerate(idx_list):
+                    ydata_list[i].append(y[idx])
         
             while tdata[-1] - tdata[0] > 2 * tint:
                 tdata.popleft()
-                ydata.popleft()
+                for ydata in ydata_list:
+                    ydata.popleft()
         
-            simuln.set_data(tdata, ydata)
+            for i, idx in enumerate(idx_list):
+                simuln_list[i].set_data(tdata, ydata_list[i])
             self.axsim.set_xlim(tdata[-1] - tint, tdata[-1] + tint / 20)
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
@@ -297,9 +309,9 @@ i4 = neuron.add_current(a_us, voff_us, tus) # ultraslow positive conductance
 
 gui = GUI(neuron, i0 = -2)
 
-gui.add_IV_curve("Fast", tf, [0.1, 0.75, 0.2, 0.2])
-gui.add_IV_curve("Slow", ts, [0.4, 0.75, 0.2, 0.2])
-gui.add_IV_curve("Ultraslow", tus, [0.7, 0.75, 0.2, 0.2])
+gui.add_IV_curve(neuron, "Fast", tf, [0.1, 0.75, 0.2, 0.2])
+gui.add_IV_curve(neuron, "Slow", ts, [0.4, 0.75, 0.2, 0.2])
+gui.add_IV_curve(neuron, "Ultraslow", tus, [0.7, 0.75, 0.2, 0.2])
 
 gui.add_label(0.25, 0.34, "Fast -ve")
 s1 = gui.add_slider("Gain", [0.1, 0.3, 0.3, 0.03], 0, 4, a_f, i1.update_a, sign=-1)
