@@ -17,9 +17,31 @@ from neuron_model import Neuron
 
 class IV_curve:
     """
-    Describe the class
+    IV curve class with added functionality of finding regions of negative
+    conductance and associating the corresponding color scheme
+    
+    args:
+        neuron: associated neuron whose IV curve is calculated
+        name: name of the IV curve, used in plotting
+        timescale: timescale of the IV curve
+        V: voltage range used for the IV curve
+        cols: coloring scheme -> cols[0] = positive conductance
+                              -> cols[1] = negative conductance
+    methods:
+        update: calculate segments used for plotting, by inserting negative
+        conductance segments into the segments of the preceeding IV curve
+        (prev_segments)
+        If IV curve corresponds to the fastest timescale no prev_segments are
+        passed
     """
     class Segment():
+        """
+        Individual segments to be plotted
+        
+        args:
+            start, end: Vstart and Vend indices for the segment
+            color: color of the segment in the plot
+        """
         def __init__(self, start, end, color):
             self.start = start
             self.end = end
@@ -100,7 +122,16 @@ class IV_curve:
 # DEFINE A CLASS WITH ALL PLOTTING FUNCTIONALITY
 class GUI:
     """
-    Describe the class
+    Graphical user interface class with methods for plotting the IV curves and
+    simulation results along with methods for adding sliders and buttons for
+    changing the neuronal parameters.
+    
+    args:
+        system: Neuron or Network class to be simulated
+    
+    kwargs:
+        vmin, vmax, dv: voltage range of the IV curves
+        i0: initial applied current
     """
     _params = {'vmin': -3, 'vmax': 3.1, 'dv': 0.1, 'i0': 0}
                  
