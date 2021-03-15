@@ -27,6 +27,33 @@ class EulerSolver():
         errorMessage = False
         return errorMessage
 
+class System():
+    """
+    Parent class implementing basic simulation methods
+    """
+    def __init__(self):
+        self.y0 = []
+    def sys(self):
+        pass
+    def set_solver(self, solver, i_app, t0, sstep, dt = 1):
+        def odesys(t, y):
+            return self.sys(i_app(t), y)
+        
+        if (solver == "Euler"):
+            self.solver = EulerSolver(odesys, t0, self.y0, dt)  
+        elif (solver == "BDF"):
+            self.solver = BDF(odesys, t0, self.y0, np.inf, max_step = sstep)
+        else:
+            raise ValueError("Undefined solver")
+    
+    def step(self):
+        msg = self.solver.step()
+        t = self.solver.t
+        y = self.solver.y
+        if msg:
+            raise ValueError('Solver terminated with message: %s ' % msg)
+            
+        return t,y
 
 class SingleTimescaleElement():
     """
@@ -89,8 +116,7 @@ class SingleTimescaleElement():
         else:
             return self.out(Vrest)
         
-
-class Neuron:
+class Neuron(System):
     """
     Parallel interconnection of current or conductance elements
     C dV/dT = - sum(I_x) + Iapp
@@ -254,25 +280,4 @@ class Neuron:
         for index, tau in enumerate(self.timescales[1:]):
             dy.append((y[0] - y[index+1]) / tau)
         
-        return np.array(dy)
-    
-    def set_solver(self, solver, i_app, t0, sstep, dt = 1):
-        def odesys(t, y):
-            return self.sys(i_app(t), y)
-        
-        if (solver == "Euler"):
-            self.solver = EulerSolver(odesys, t0, self.y0, dt)  
-        elif (solver == "BDF"):
-            self.solver = BDF(odesys, t0, self.y0, np.inf, max_step = sstep)
-        else:
-            raise ValueError("Undefined solver")
-    
-    def step(self):
-        msg = self.solver.step()
-        t = self.solver.t
-        y = self.solver.y
-        if msg:
-            raise ValueError('Solver terminated with message: %s ' % msg)
-            
-        return t,y
-        
+        return np.array(dy)        
