@@ -165,6 +165,8 @@ class GUI:
         self.axsim.set_xlabel('Time')
         self.axsim.set_ylabel('V')
         
+        self.pause_value = False
+        
     def add_IV_curve(self, neuron, name, timescale, coords):
         self.IV_size += 1
         ax = self.fig.add_subplot(2, 3, self.IV_size)
@@ -235,7 +237,10 @@ class GUI:
         
     def add_label(self, x, y, text):
         plt.figtext(x, y, text, horizontalalignment = 'center')
-        
+     
+    def pause(self, event):
+        self.pause_value = not(self.pause_value)
+    
     def run(self, idx_list = [0]):        
         sstep = 100 # draw sstep length of data in a single call
         tint = 5000 # time window plotted
@@ -254,16 +259,12 @@ class GUI:
         self.system.set_solver("Euler", self.i_app, t, sstep)
         
         while plt.fignum_exists(self.fig.number):
-            #while pause_value:
-            #    plt.pause(0.01)
+            while self.pause_value:
+                plt.pause(0.01)
         
             last_t = t
             
-            while t - last_t < sstep:
-                #if pulse_on and (t > tend):
-                #    i_app = lambda t: i_app_const
-                #    pulse_on = False
-                
+            while t - last_t < sstep:                
                 # Simulation step
                 t, y = self.system.step()
                 
@@ -333,43 +334,6 @@ s8 = gui.add_slider("$V_{off}$", [0.6, 0.1, 0.3, 0.03], -2, 2, voff_us, i4.updat
 
 s9 = gui.add_iapp_slider([0.1, 0.02, 0.5, 0.03], -3, 3)
 
+b = gui.add_button("Pause", [0.8, 0.02, 0.1, 0.03], gui.pause)
+
 gui.run()
-
-
-# **** FUNCTIONS TO UPDATE PARAMETERS ON GUI CHANGES *************************
-
-# ADD THIS
-    
-#def pulse(event):
-#    global pulse_on, tend, i_app
-#    
-#    # Pulse parameters
-#    delta_t = 10
-#    delta_i = 1
-#    
-#    tend = t + delta_t
-#    pulse_on = True
-#    
-#    i_app = lambda t: (i_app_const + delta_i)
-#    
-#def pause(event):
-#    global pause_value
-#    pause_value = not(pause_value)
-#    if pause_value:
-#        button_pause.label.set_text('Resume')
-#    else:
-#        button_pause.label.set_text('Pause')
-
-# **** DRAW GRAPHICAL USER INTERFACE *****************************************
-
-# Button for I_app = pulse(t)
-#axpulse_button = plt.axes([.675, 0.02, 0.1, 0.03])
-#pulse_button = Button(axpulse_button, 'Pulse')
-#pulse_button.on_clicked(pulse)
-
-# Button for pausing the simulation
-#axbutton = plt.axes([0.8, 0.02, 0.1, 0.03])
-#button_pause = Button(axbutton, 'Pause')
-#button_pause.on_clicked(pause)
-
-
