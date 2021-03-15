@@ -8,7 +8,6 @@ An example of a single-neuron simulation
 import matplotlib.pyplot as plt
 
 from neuron_model import Neuron
-from scipy.integrate import solve_ivp
 
 # Define timescales
 tf = 0

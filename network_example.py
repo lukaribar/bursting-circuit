@@ -7,8 +7,6 @@ An example of a network simulation
 
 import matplotlib.pyplot as plt
 
-from scipy.integrate import solve_ivp
-
 from neuron_model import Neuron
 from network_model import CurrentSynapse, ResistorInterconnection, Network
 
