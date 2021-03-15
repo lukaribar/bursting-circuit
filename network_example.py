@@ -52,15 +52,7 @@ trange = (0, 20000)
 # Define i_app as a function of t: returns an i_app for each neuron
 i_app = lambda t: [-2.1, -2]
 
-# Return dy/dt of the system
-def odesys(t, y):
-    return network.sys(i_app(t),y)
-
-# Initial conditions
-y0 = network.get_init_conditions()
-
-# ODE solver
-sol = solve_ivp(odesys, trange, y0)
+sol = network.simulate(trange, i_app)
 
 # Plot simulation
 # y[0] = neuron 1 membrane voltage, y[3] = neuron 2 membrane voltage

@@ -6,7 +6,7 @@ Synaptic connections use either the 'Current' or 'Conductance' model
 @author: Luka
 """
 
-from neuron_model import sigmoid
+from neuron_model import System, sigmoid
 import numpy as np
 
 class Interconnection():
@@ -74,7 +74,7 @@ class ResistorInterconnection(Interconnection):
     def out(self, Vpre, Vpost):
         return (Vpre - Vpost)
 
-class Network:
+class Network(System):
     """
     Neural network:
         neurons: list containing all neurons
