@@ -7,9 +7,26 @@ an arbitrary number of either 'Current' or 'Conductance' elements
 """
 from numpy import tanh, exp
 import numpy as np
+from scipy.integrate import BDF
 
 def sigmoid(x, k = 1):
     return 1 / (1 + exp(-k * (x)))
+
+class EulerSolver():
+    def __init__(self, odesys, t0, y0, dt):
+        self.odesys = odesys
+        self.t = t0
+        self.y = y0
+        self.dt = dt
+        
+    def step(self):
+        self.y += self.odesys(self.t,self.y)*self.dt
+        self.t += self.dt
+        
+        # Return error message for compatibility with scipy solvers
+        errorMessage = False
+        return errorMessage
+
 
 class SingleTimescaleElement():
     """
@@ -238,3 +255,24 @@ class Neuron:
             dy.append((y[0] - y[index+1]) / tau)
         
         return np.array(dy)
+    
+    def set_solver(self, solver, i_app, t0, sstep, dt = 1):
+        def odesys(t, y):
+            return self.sys(i_app(t), y)
+        
+        if (solver == "Euler"):
+            self.solver = EulerSolver(odesys, t0, self.y0, dt)  
+        elif (solver == "BDF"):
+            self.solver = BDF(odesys, t0, self.y0, np.inf, max_step = sstep)
+        else:
+            raise ValueError("Undefined solver")
+    
+    def step(self):
+        msg = self.solver.step()
+        t = self.solver.t
+        y = self.solver.y
+        if msg:
+            raise ValueError('Solver terminated with message: %s ' % msg)
+            
+        return t,y
+        

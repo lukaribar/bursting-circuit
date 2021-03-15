@@ -236,16 +236,10 @@ class GUI:
     def add_label(self, x, y, text):
         plt.figtext(x, y, text, horizontalalignment = 'center')
         
-    def run(self, idx_list = [0]):
-        t0 = 0
-        v0 = self.system.get_init_conditions()
-        
+    def run(self, idx_list = [0]):        
         sstep = 100 # draw sstep length of data in a single call
         tint = 5000 # time window plotted
-        
-        #tdata, ydata = deque(), deque()
-        #simuln, = self.axsim.plot(tdata, ydata)
-        
+                
         tdata = deque()
         ydata_list = []
         simuln_list = []
@@ -255,26 +249,10 @@ class GUI:
             simuln_list.append(line)
             ydata_list.append(ydata)
         
-        # Define ODE equation for the solvers
-        def odesys(t, y):
-            return self.system.sys(self.i_app(t),y)
+        # Set the simulation solver
+        t = 0
+        self.system.set_solver("Euler", self.i_app, t, sstep)
         
-        # Standard ODE solvers (RK45, BDF, etc) (import from scipy.integrate)
-        #solver = BDF(odesys, 0, v0, np.inf, max_step=sstep)
-        #y = solver.y
-        #t = solver.t
-        
-        # Basic Euler step
-        y = v0
-        t = t0
-        
-        def euler_step(odesys, t0, y0):
-            dt = 1 # step size
-            y = y0 + odesys(t0,y0)*dt
-            t = t0 + dt
-            return t, y
-         
-        # Comment Euler step or standard solver step depending on the method
         while plt.fignum_exists(self.fig.number):
             #while pause_value:
             #    plt.pause(0.01)
@@ -286,15 +264,8 @@ class GUI:
                 #    i_app = lambda t: i_app_const
                 #    pulse_on = False
                 
-                # Euler step
-                t,y = euler_step(odesys,t,y)
-                
-                # Standard solver step
-        #        msg = solver.step()
-        #        t = solver.t
-        #        y = solver.y
-        #        if msg:
-        #            raise ValueError('solver terminated with message: %s ' % msg)
+                # Simulation step
+                t, y = self.system.step()
                 
                 tdata.append(t)
                 for i, idx in enumerate(idx_list):
