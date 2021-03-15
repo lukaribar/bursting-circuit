@@ -28,14 +28,16 @@ trange = (0, 10000)
 i_app = lambda t: -2 # define i_app as function of t
 
 # Return dy/dt of the system
-def odesys(t, y):
-    return neuron.sys(i_app(t),y)
+#def odesys(t, y):
+#    return neuron.sys(i_app(t),y)
 
 # Initial conditions
-y0 = neuron.get_init_conditions()
+#y0 = neuron.get_init_conditions()
 
 # ODE solver
-sol = solve_ivp(odesys, trange, y0)
+#sol = solve_ivp(odesys, trange, y0)
+
+sol = neuron.simulate(trange, i_app)
 
 # Plot simulation
 # y[0] - membrane voltage, y[1] - slow voltage, y[2] - ultra-slow voltage

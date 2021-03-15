@@ -7,7 +7,7 @@ an arbitrary number of either 'Current' or 'Conductance' elements
 """
 from numpy import tanh, exp
 import numpy as np
-from scipy.integrate import BDF
+from scipy.integrate import solve_ivp, BDF
 
 def sigmoid(x, k = 1):
     return 1 / (1 + exp(-k * (x)))
@@ -33,8 +33,10 @@ class System():
     """
     def __init__(self):
         self.y0 = []
+    
     def sys(self):
         pass
+    
     def set_solver(self, solver, i_app, t0, sstep, dt = 1):
         def odesys(t, y):
             return self.sys(i_app(t), y)
@@ -54,6 +56,20 @@ class System():
             raise ValueError('Solver terminated with message: %s ' % msg)
             
         return t,y
+    
+    def simulate(self, trange, i_app, method = "Default", dt = 1):
+        def odesys(t, y):
+            return self.sys(i_app(t), y)
+        
+        if (method == "Default"):
+            sol = solve_ivp(odesys, trange, self.y0)
+        elif (method == "Euler"):
+            print("Implement this")
+        else:
+            raise ValueError("Undefined solver")
+            
+        return sol
+        
 
 class SingleTimescaleElement():
     """
