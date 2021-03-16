@@ -134,7 +134,8 @@ class GUI:
         i0: initial applied current
     """
     _params = {'vmin': -3, 'vmax': 3.1, 'dv': 0.1, 'i0': 0,
-               'plot_fixed_point': False}
+               'plot_fixed_point': False, 'time_step': 1,
+               'ymin': -5, 'ymax': 5}
                  
     def __init__(self, system, **kwargs):
         self.__dict__.update(self._params) # Default parameters
@@ -165,7 +166,7 @@ class GUI:
         # Add simulation plot
         self.axsim = self.fig.add_subplot(2, 3, 4)
         self.axsim.set_position([0.1, 0.45, 0.8, 0.2]) # move this 
-        self.axsim.set_ylim((-5, 5))
+        self.axsim.set_ylim((self.ymin, self.ymax))
         self.axsim.set_xlabel('Time')
         self.axsim.set_ylabel('V')
         
@@ -277,7 +278,7 @@ class GUI:
         
         # Set the simulation solver
         t = 0
-        self.system.set_solver("Euler", self.i_app, t, sstep)
+        self.system.set_solver("Euler", self.i_app, t, sstep, dt = self.time_step)
         
         while plt.fignum_exists(self.fig.number):
             while self.pause_value:
