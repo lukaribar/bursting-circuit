@@ -49,6 +49,7 @@ class IV_curve:
         self.name = name
         self.timescale = timescale
         self.V = V
+        self.I = []
         self.cols = cols
         self.segments = []
                     
@@ -153,6 +154,9 @@ class GUI:
         self.IV_curves = []
         self.IV_size = 0
         
+        self.v_rest = []
+        self.I_ss_rest = []
+        
         # Create empty plot
         plt.close("all")
         self.fig = plt.figure()
@@ -210,20 +214,20 @@ class GUI:
                    'C2')
         # Add fixed point circle
         if (self.plot_fixed_point):
-            v_rest, I_ss_rest = self.get_rest_point()
-            self.axs_iv[-1].plot(v_rest,I_ss_rest,'C2', marker = '.',
+            self.find_fixed_point()
+            self.axs_iv[-1].plot(self.v_rest,self.I_ss_rest,'C2', marker = '.',
                    markersize = 10)
         
-    def get_rest_point(self):
+    def find_fixed_point(self):
         I_ss = self.IV_curves[-1].get_I()
         zero_crossings = np.where(np.diff(np.sign(I_ss-self.i_app_const)))[0]
         if (zero_crossings.size == 0):
-            return [],[]
-        index = zero_crossings[0] # the most left one
-        v_rest = (self.V[index] + self.V[index+1])/2
-        I_ss_rest = (I_ss[index] + I_ss[index+1])/2
-        
-        return v_rest, I_ss_rest
+            self.v_rest = []
+            self.I_ss_rest = []
+        else:
+            index = zero_crossings[0] # the most left one
+            self.v_rest = (self.V[index] + self.V[index+1])/2
+            self.I_ss_rest = (I_ss[index] + I_ss[index+1])/2
     
     def update_iapp(self, val):
         self.i_app_const = val

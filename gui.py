@@ -32,7 +32,7 @@ i2 = neuron.add_current(a_s1, voff_s1, ts) # slow positive conductance
 i3 = neuron.add_current(a_s2, voff_s2, ts) # slow negative conductance
 i4 = neuron.add_current(a_us, voff_us, tus) # ultraslow positive conductance
 
-gui = GUI(neuron, i0 = -2)
+gui = GUI(neuron, i0 = -2, plot_fixed_point = True)
 
 gui.add_IV_curve(neuron, "Fast", tf, [0.1, 0.75, 0.2, 0.2])
 gui.add_IV_curve(neuron, "Slow", ts, [0.4, 0.75, 0.2, 0.2])
