@@ -114,7 +114,9 @@ class IV_curve:
         
     def get_segments(self):
         return self.segments
-
+    
+    def get_I(self):
+        return self.I
 
 # DEFINE A CLASS WITH ALL PLOTTING FUNCTIONALITY
 class GUI:
@@ -130,7 +132,8 @@ class GUI:
         vmin, vmax, dv: voltage range of the IV curves
         i0: initial applied current
     """
-    _params = {'vmin': -3, 'vmax': 3.1, 'dv': 0.1, 'i0': 0}
+    _params = {'vmin': -3, 'vmax': 3.1, 'dv': 0.1, 'i0': 0,
+               'plot_fixed_point': False}
                  
     def __init__(self, system, **kwargs):
         self.__dict__.update(self._params) # Default parameters
@@ -185,9 +188,10 @@ class GUI:
             # Update the segments
             if (idx > 0):
                 prev_segments = self.IV_curves[idx-1].get_segments()
-                iv_curve.update(prev_segments)
             else:
-                iv_curve.update()
+                prev_segments = []
+            
+            iv_curve.update(prev_segments)    
             
             # Plot
             ax.cla()
@@ -204,6 +208,22 @@ class GUI:
         # Add Iapp line to the last IV curve
         self.axs_iv[-1].plot(self.V, np.ones(len(self.V)) * self.i_app_const,
                    'C2')
+        # Add fixed point circle
+        if (self.plot_fixed_point):
+            v_rest, I_ss_rest = self.get_rest_point()
+            self.axs_iv[-1].plot(v_rest,I_ss_rest,'C2', marker = '.',
+                   markersize = 10)
+        
+    def get_rest_point(self):
+        I_ss = self.IV_curves[-1].get_I()
+        zero_crossings = np.where(np.diff(np.sign(I_ss-self.i_app_const)))[0]
+        if (zero_crossings.size == 0):
+            return [],[]
+        index = zero_crossings[0] # the most left one
+        v_rest = (self.V[index] + self.V[index+1])/2
+        I_ss_rest = (I_ss[index] + I_ss[index+1])/2
+        
+        return v_rest, I_ss_rest
     
     def update_iapp(self, val):
         self.i_app_const = val
