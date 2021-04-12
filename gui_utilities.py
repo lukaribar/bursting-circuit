@@ -146,14 +146,20 @@ class GUI:
         self.system = system # associate GUI with a neuron or a network
         
         self.V = np.arange(self.vmin,self.vmax,self.dv)
+        
+        # Extended voltage range for finding vrest
+        vrange = self.vmax - self.vmin
+        self.V_extended = np.arange(self.vmin-vrange/2, self.vmax+vrange/2, 
+                                    self.dv)
+        
         self.i_app_const = self.i0
         self.i_app = lambda t: self.i_app_const
         
         self.IV_curves = []
         self.IV_size = 0
         
-        self.v_rest = []
-        self.I_ss_rest = []
+        self.v_rest = 0
+        self.I_ss_rest = 0
         
         # Create empty plot
         plt.close("all")
@@ -187,7 +193,7 @@ class GUI:
         
     def update_IV_curves(self):
         # Update v_rest
-        self.find_fixed_point()
+        self.update_fixed_point()
         
         for idx, (iv_curve, ax) in enumerate(zip(self.IV_curves, self.axs_iv)):
             # Update the segments
@@ -214,20 +220,19 @@ class GUI:
         self.axs_iv[-1].plot(self.V, np.ones(len(self.V)) * self.i_app_const,
                    'C2')
         # Add fixed point circle
-        if (self.plot_fixed_point):
+        if (self.plot_fixed_point and (self.vmin < self.v_rest < self.vmax)):
             self.axs_iv[-1].plot(self.v_rest,self.I_ss_rest,'C2', marker = '.',
                    markersize = 10)
         
-    def find_fixed_point(self):
-        I_ss = self.system.IV_ss(self.V)
-        #I_ss = self.IV_curves[-1].get_I()
+    def update_fixed_point(self):
+        I_ss = self.system.IV_ss(self.V_extended)
         zero_crossings = np.where(np.diff(np.sign(I_ss-self.i_app_const)))[0]
-        if (zero_crossings.size == 0):
-            self.v_rest = []
-            self.I_ss_rest = []
-        else:
-            index = zero_crossings[0] # the most left one
-            self.v_rest = (self.V[index] + self.V[index+1])/2
+        if (zero_crossings.size != 0):
+            # Take the equilibrium nearest to the previous equilibrium
+            vdiff = abs(self.V_extended[zero_crossings] - self.v_rest)
+            index = zero_crossings[vdiff.argmin()]
+            #index = zero_crossings[0] # the most left one
+            self.v_rest = (self.V_extended[index] + self.V_extended[index+1])/2
             self.I_ss_rest = (I_ss[index] + I_ss[index+1])/2
     
     def update_iapp(self, val):
