@@ -236,7 +236,7 @@ class Neuron(System):
             iout = self.g_max * (V - self.E_rev)
             for x in self.gates:
                 iout *= x.out(V)
-                return iout  
+            return iout  
         
         def outx(self, y):
             iout = self.g_max * (y[0] - self.E_rev)
@@ -268,6 +268,13 @@ class Neuron(System):
         for el in self.elements:
             I += el.IV(V, tau, Vrest)
         
+        return I
+    
+    def IV_ss(self, V):
+        I = 0
+        for el in self.elements:
+            I += el.out(V)
+            
         return I
         
     def get_init_conditions(self):

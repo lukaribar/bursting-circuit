@@ -52,16 +52,13 @@ class IV_curve:
         self.I = []
         self.cols = cols
         self.segments = []
-                    
-        # Calculate the IV curve and the corresponding segments
-        self.update()
-    
-    def update(self, prev_segments = []):
+                        
+    def update(self, vrest, prev_segments = []):
         # If no preceeding IV curves, put [Vmin, Vmax] as prev_segment
         if (prev_segments == []):
             prev_segments = [self.Segment(0, self.V.size-1, self.cols[0])]
         
-        self.I = self.neuron.IV(self.V, self.timescale)
+        self.I = self.neuron.IV(self.V, self.timescale, vrest)
         
         col = self.cols[1] # color for -ve conductance
         
@@ -189,6 +186,9 @@ class GUI:
         self.update_IV_curves()
         
     def update_IV_curves(self):
+        # Update v_rest
+        self.find_fixed_point()
+        
         for idx, (iv_curve, ax) in enumerate(zip(self.IV_curves, self.axs_iv)):
             # Update the segments
             if (idx > 0):
@@ -196,7 +196,7 @@ class GUI:
             else:
                 prev_segments = []
             
-            iv_curve.update(prev_segments)    
+            iv_curve.update(self.v_rest, prev_segments)    
             
             # Plot
             ax.cla()
@@ -215,12 +215,12 @@ class GUI:
                    'C2')
         # Add fixed point circle
         if (self.plot_fixed_point):
-            self.find_fixed_point()
             self.axs_iv[-1].plot(self.v_rest,self.I_ss_rest,'C2', marker = '.',
                    markersize = 10)
         
     def find_fixed_point(self):
-        I_ss = self.IV_curves[-1].get_I()
+        I_ss = self.system.IV_ss(self.V)
+        #I_ss = self.IV_curves[-1].get_I()
         zero_crossings = np.where(np.diff(np.sign(I_ss-self.i_app_const)))[0]
         if (zero_crossings.size == 0):
             self.v_rest = []
