@@ -48,7 +48,7 @@ i4 = neuron.add_conductance(g4, E_rev4)
 x4 = i4.add_gate(k4, voff4, tus)
 
 gui = GUI(neuron, i0 = -50, vmin = -100, vmax = 20, dv = 1.0, time_step = 0.1,
-          plot_fixed_point = True, ymin = -120, ymax = 20)
+          plot_fixed_point = True, ymin = -120, ymax = 20, sstep=10, tint=3000)
 
 gui.add_IV_curve(neuron, "Fast", tf, [0.1, 0.75, 0.2, 0.2])
 gui.add_IV_curve(neuron, "Slow", ts, [0.4, 0.75, 0.2, 0.2])
