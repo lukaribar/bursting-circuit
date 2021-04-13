@@ -129,10 +129,15 @@ class GUI:
     kwargs:
         vmin, vmax, dv: voltage range of the IV curves
         i0: initial applied current
+        plot_fixed_point: set to True to plot the fixed point in the I_ss
+        time_step: step size for the Euler solver
+        ymin, ymax: voltage range for the time plot
+        sstep: wait for sstep data points before updating the time plot
+        tint: length of the time plot
     """
     _params = {'vmin': -3, 'vmax': 3.1, 'dv': 0.1, 'i0': 0,
                'plot_fixed_point': False, 'time_step': 1,
-               'ymin': -5, 'ymax': 5}
+               'ymin': -5, 'ymax': 5, 'sstep': 100, 'tint': 5000}
                  
     def __init__(self, system, **kwargs):
         self.__dict__.update(self._params) # Default parameters
@@ -269,8 +274,8 @@ class GUI:
         self.pause_value = not(self.pause_value)
     
     def run(self, idx_list = [0]):        
-        sstep = 100 # draw sstep length of data in a single call
-        tint = 5000 # time window plotted
+        sstep = self.sstep
+        tint = self.tint
                 
         tdata = deque()
         ydata_list = []
