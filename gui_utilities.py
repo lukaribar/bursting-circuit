@@ -202,7 +202,7 @@ class GUI:
                 for i, idx in enumerate(idx_list):
                     ydata_list[i].append(y[idx])
         
-            while tdata[-1] - tdata[0] > 2 * tint:
+            while tdata[-1] - tdata[0] > tint:
                 tdata.popleft()
                 for ydata in ydata_list:
                     ydata.popleft()
