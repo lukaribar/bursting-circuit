@@ -12,111 +12,6 @@ import numpy as np
 
 from collections import deque
 
-class IV_curve:
-    """
-    IV curve class with added functionality of finding regions of negative
-    conductance and associating the corresponding color scheme
-    
-    args:
-        neuron: associated neuron whose IV curve is calculated
-        name: name of the IV curve, used in plotting
-        timescale: timescale of the IV curve
-        V: voltage range used for the IV curve
-        cols: coloring scheme -> cols[0] = positive conductance
-                              -> cols[1] = negative conductance
-    methods:
-        update: calculate segments used for plotting, by inserting negative
-        conductance segments into the segments of the preceeding IV curve
-        (prev_segments)
-        If IV curve corresponds to the fastest timescale no prev_segments are
-        passed
-    """
-    class Segment():
-        """
-        Individual segments to be plotted
-        
-        args:
-            start, end: Vstart and Vend indices for the segment
-            color: color of the segment in the plot
-        """
-        def __init__(self, start, end, color):
-            self.start = start
-            self.end = end
-            self.color = color
-    
-    def __init__(self, neuron, name, timescale, V, cols):
-        self.neuron = neuron
-        self.name = name
-        self.timescale = timescale
-        self.V = V
-        self.I = []
-        self.cols = cols
-        self.segments = []
-                        
-    def update(self, vrest, prev_segments = []):
-        # If no preceeding IV curves, put [Vmin, Vmax] as prev_segment
-        if (prev_segments == []):
-            prev_segments = [self.Segment(0, self.V.size-1, self.cols[0])]
-        
-        self.I = self.neuron.IV(self.V, self.timescale, vrest)
-        
-        col = self.cols[1] # color for -ve conductance
-        
-        # Find regions of -ve conductance
-        dIdV = np.diff(self.I)
-        indices = np.where(np.diff(np.sign(dIdV)) != 0)
-        indices = indices[0] + 1 # +1 for the correct max/min points
-        indices = np.append(indices, self.V.size) # add ending point
-        
-        slope = dIdV[0] < 0 # True if initial slope -ve
-        
-        prev = 0
-        
-        new_segments = []
-        
-        # Get regions of -ve conductance
-        for i in np.nditer(indices):
-            # If region of -ve conductance
-            if slope:
-                new_segments.append(self.Segment(prev, i, col))
-            slope = not(slope) # Sign changes after every point in indices
-            prev = i
-            
-        # Insert new segments
-        for new_segment in new_segments:
-            # Find which prev_segments containt new_segment start and end
-            for idx, prev_segment in enumerate(prev_segments):
-                if (prev_segment.start <= new_segment.start
-                    <= prev_segment.end):
-                    idx1 = idx
-                    col1 = prev_segment.color
-                    start1 = prev_segment.start
-                if (prev_segment.start <= new_segment.end <= prev_segment.end):
-                    idx2 = idx
-                    col3 = prev_segment.color
-                    end3 = prev_segment.end
-            
-            # Delete the old segments between idx1 and idx2
-            del prev_segments[idx1:idx2+1]
-            
-            # start and end variables of new segments to insert
-            end1 = new_segment.start
-            start3 = new_segment.end
-            
-            # Insert new segments
-            prev_segments.insert(idx1, self.Segment(start3, end3, col3))
-            prev_segments.insert(idx1, new_segment)
-            prev_segments.insert(idx1, self.Segment(start1, end1, col1))
-                
-        self.segments = prev_segments
-        
-    def get_segments(self):
-        return self.segments
-    
-    def get_I(self):
-        return self.I
-
-# DEFINE A CLASS WITH ALL PLOTTING FUNCTIONALITY
 class GUI:
     """
     Graphical user interface class with methods for plotting the IV curves and
@@ -314,3 +209,107 @@ class GUI:
             self.axsim.set_xlim(tdata[-1] - tint, tdata[-1] + tint / 20)
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
+            
+class IV_curve:
+    """
+    IV curve class with added functionality of finding regions of negative
+    conductance and associating the corresponding color scheme
+    
+    args:
+        neuron: associated neuron whose IV curve is calculated
+        name: name of the IV curve, used in plotting
+        timescale: timescale of the IV curve
+        V: voltage range used for the IV curve
+        cols: coloring scheme -> cols[0] = positive conductance
+                              -> cols[1] = negative conductance
+    methods:
+        update: calculate segments used for plotting, by inserting negative
+        conductance segments into the segments of the preceeding IV curve
+        (prev_segments)
+        If IV curve corresponds to the fastest timescale no prev_segments are
+        passed
+    """
+    class Segment():
+        """
+        Individual segments to be plotted
+        
+        args:
+            start, end: Vstart and Vend indices for the segment
+            color: color of the segment in the plot
+        """
+        def __init__(self, start, end, color):
+            self.start = start
+            self.end = end
+            self.color = color
+    
+    def __init__(self, neuron, name, timescale, V, cols):
+        self.neuron = neuron
+        self.name = name
+        self.timescale = timescale
+        self.V = V
+        self.I = []
+        self.cols = cols
+        self.segments = []
+                        
+    def update(self, vrest, prev_segments = []):
+        # If no preceeding IV curves, put [Vmin, Vmax] as prev_segment
+        if (prev_segments == []):
+            prev_segments = [self.Segment(0, self.V.size-1, self.cols[0])]
+        
+        self.I = self.neuron.IV(self.V, self.timescale, vrest)
+        
+        col = self.cols[1] # color for -ve conductance
+        
+        # Find regions of -ve conductance
+        dIdV = np.diff(self.I)
+        indices = np.where(np.diff(np.sign(dIdV)) != 0)
+        indices = indices[0] + 1 # +1 for the correct max/min points
+        indices = np.append(indices, self.V.size) # add ending point
+        
+        slope = dIdV[0] < 0 # True if initial slope -ve
+        
+        prev = 0
+        
+        new_segments = []
+        
+        # Get regions of -ve conductance
+        for i in np.nditer(indices):
+            # If region of -ve conductance
+            if slope:
+                new_segments.append(self.Segment(prev, i, col))
+            slope = not(slope) # Sign changes after every point in indices
+            prev = i
+            
+        # Insert new segments
+        for new_segment in new_segments:
+            # Find which prev_segments containt new_segment start and end
+            for idx, prev_segment in enumerate(prev_segments):
+                if (prev_segment.start <= new_segment.start
+                    <= prev_segment.end):
+                    idx1 = idx
+                    col1 = prev_segment.color
+                    start1 = prev_segment.start
+                if (prev_segment.start <= new_segment.end <= prev_segment.end):
+                    idx2 = idx
+                    col3 = prev_segment.color
+                    end3 = prev_segment.end
+            
+            # Delete the old segments between idx1 and idx2
+            del prev_segments[idx1:idx2+1]
+            
+            # start and end variables of new segments to insert
+            end1 = new_segment.start
+            start3 = new_segment.end
+            
+            # Insert new segments
+            prev_segments.insert(idx1, self.Segment(start3, end3, col3))
+            prev_segments.insert(idx1, new_segment)
+            prev_segments.insert(idx1, self.Segment(start1, end1, col1))
+                
+        self.segments = prev_segments
+        
+    def get_segments(self):
+        return self.segments
+    
+    def get_I(self):
+        return self.I
