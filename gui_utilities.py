@@ -183,6 +183,7 @@ class GUI:
             line, = self.axsim.plot(tdata, ydata)
             line_list.append(line)
             ydata_list.append(ydata)
+        self.axsim.set_xlim(0, tint)
         
         # Set the simulation solver
         t = 0
@@ -209,11 +210,13 @@ class GUI:
             
             # Restore background to draw on top
             self.fig.canvas.restore_region(background)
+            # Modify time data to (0, tint) range
+            tplot = np.array(tdata)
+            tplot = tplot - tplot[0]
             for i, idx in enumerate(idx_list):
-                line_list[i].set_data(tdata, ydata_list[i])
+                line_list[i].set_data(tplot, ydata_list[i])
                 self.axsim.draw_artist(line_list[i])
-                self.fig.canvas.blit(self.axsim.bbox)
-            self.axsim.set_xlim(tdata[-1] - tint, tdata[-1] + tint / 20)
+                self.fig.canvas.blit(self.axsim.bbox)       
             self.fig.canvas.flush_events()
             
 class IV_curve:
