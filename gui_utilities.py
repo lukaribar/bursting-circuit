@@ -210,9 +210,12 @@ class GUI:
             
             # Restore background to draw on top
             self.fig.canvas.restore_region(background)
+            
             # Modify time data to (0, tint) range
             tplot = np.array(tdata)
             tplot = tplot - tplot[0]
+            
+            # Update each plot line
             for i, idx in enumerate(idx_list):
                 line_list[i].set_data(tplot, ydata_list[i])
                 self.axsim.draw_artist(line_list[i])
