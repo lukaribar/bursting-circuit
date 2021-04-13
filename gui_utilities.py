@@ -131,7 +131,6 @@ class GUI:
             # Take the equilibrium nearest to the previous equilibrium
             vdiff = abs(self.V_extended[zero_crossings] - self.v_rest)
             index = zero_crossings[vdiff.argmin()]
-            #index = zero_crossings[0] # the most left one
             self.v_rest = (self.V_extended[index] + self.V_extended[index+1])/2
             self.I_ss_rest = (I_ss[index] + I_ss[index+1])/2
     
@@ -171,14 +170,18 @@ class GUI:
     def run(self, idx_list = [0]):        
         sstep = self.sstep
         tint = self.tint
-                
+        
+        # Get time plot background for easier replotting
+        self.fig.canvas.draw()
+        background = self.fig.canvas.copy_from_bbox(self.axsim.bbox)
+        
         tdata = deque()
         ydata_list = []
-        simuln_list = []
+        line_list = []
         for idx in idx_list:
             ydata = deque()
             line, = self.axsim.plot(tdata, ydata)
-            simuln_list.append(line)
+            line_list.append(line)
             ydata_list.append(ydata)
         
         # Set the simulation solver
@@ -203,11 +206,14 @@ class GUI:
                 tdata.popleft()
                 for ydata in ydata_list:
                     ydata.popleft()
-        
+            
+            # Restore background to draw on top
+            self.fig.canvas.restore_region(background)
             for i, idx in enumerate(idx_list):
-                simuln_list[i].set_data(tdata, ydata_list[i])
+                line_list[i].set_data(tdata, ydata_list[i])
+                self.axsim.draw_artist(line_list[i])
+                self.fig.canvas.blit(self.axsim.bbox)
             self.axsim.set_xlim(tdata[-1] - tint, tdata[-1] + tint / 20)
-            self.fig.canvas.draw()
             self.fig.canvas.flush_events()
             
 class IV_curve:
