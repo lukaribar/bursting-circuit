@@ -219,7 +219,7 @@ class GUI:
             for i, idx in enumerate(idx_list):
                 line_list[i].set_data(tplot, ydata_list[i])
                 self.axsim.draw_artist(line_list[i])
-                self.fig.canvas.blit(self.axsim.bbox)       
+            self.fig.canvas.blit(self.axsim.bbox)          
             self.fig.canvas.flush_events()
             
 class IV_curve:
