@@ -78,14 +78,6 @@ class GUI:
         plt.close("all")
         self.fig = plt.figure()
 
-        # Fix window size
-        bck = plt.get_backend()
-        if bck == "Qt5Agg" or bck == "Qt4Agg":
-            win = self.fig.canvas.window()
-            win.setFixedSize(win.size())
-        else:
-            print("IMPORTANT: Resizing figure is not supported")
-
         self.axs_iv = []  # list of IV curve axis
         self.axsim = None  # simulation plot axis
 
