@@ -249,6 +249,9 @@ class GUI:
                 self.axsim.draw_artist(line_list[i])
             self.fig.canvas.blit(self.axsim.bbox)
             self.fig.canvas.flush_events()
+            
+            # Figure not updating without adding pause
+            plt.pause(1e-3)
 
 
 class IV_curve:
