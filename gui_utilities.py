@@ -6,6 +6,9 @@ simulations
 @author: Luka
 """
 
+import matplotlib
+
+matplotlib.use("Qt5Agg")
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button
 import numpy as np
@@ -77,6 +80,7 @@ class GUI:
         # Create empty plot
         plt.close("all")
         self.fig = plt.figure()
+        plt.show(block=False)
 
         self.axs_iv = []  # list of IV curve axis
         self.axsim = None  # simulation plot axis
@@ -249,9 +253,6 @@ class GUI:
                 self.axsim.draw_artist(line_list[i])
             self.fig.canvas.blit(self.axsim.bbox)
             self.fig.canvas.flush_events()
-            
-            # Figure not updating without adding pause
-            plt.pause(1e-3)
 
 
 class IV_curve:
