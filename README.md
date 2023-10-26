@@ -32,6 +32,15 @@ The required definitions are provided in `gui_utilities.py`.
 
 The examples show how the model definitions are used to construct and simulate neurons and networks of neurons.
 
+### Installation
+Recommended steps for running the code:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
 ### Requirements
 - `requirements.txt`
 
