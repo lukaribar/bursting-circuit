@@ -79,7 +79,13 @@ class GUI:
 
         # Create empty plot
         plt.close("all")
-        self.fig = plt.figure()
+        
+        # Issue with the rendering when resizing, so set a fixed size
+        self.fig = plt.figure(figsize=(8.0, 6.0))
+        win = self.fig.canvas.window()
+        win.setFixedSize(win.size())
+        
+        # Set block=False to allow replotting
         plt.show(block=False)
 
         self.axs_iv = []  # list of IV curve axis
