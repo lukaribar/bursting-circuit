@@ -2,9 +2,8 @@
 Graphical interface for controlling single *conductance-based* neuron behavior.
 Neuron consists of 4 conductance elements with single activation variables
 representing fast -ve, slow +ve, slow -ve, and ultra-slow +ve conductance.
-
-@author: Luka
 """
+
 from gui_utilities import GUI
 from neuron_model import Neuron
 

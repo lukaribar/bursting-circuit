@@ -1,13 +1,11 @@
 """
 An example of a network simulation
-
-@author: Luka
 """
 
 import matplotlib.pyplot as plt
 
+from network_model import CurrentSynapse, Network, ResistorInterconnection
 from neuron_model import Neuron
-from network_model import CurrentSynapse, ResistorInterconnection, Network
 
 # Define timescales
 tf = 0
@@ -48,11 +46,10 @@ network = Network(
 trange = (0, 20000)
 
 # Define i_app as a function of t: returns an i_app for each neuron
-i_app = lambda t: [-2.1, -2]
-
-sol = network.simulate(trange, i_app)
+sol = network.simulate(trange, i_app=lambda t: [-2.1, -2])
 
 # Plot simulation
 # y[0] = neuron 1 membrane voltage, y[3] = neuron 2 membrane voltage
 plt.figure()
 plt.plot(sol.t, sol.y[0], sol.t, sol.y[3])
+plt.show()

@@ -1,12 +1,11 @@
 """
 Network of neurons with synaptic and resistive interconnections.
 Synaptic connections use either the 'Current' or 'Conductance' model
-
-@author: Luka
 """
 
-from neuron_model import System, sigmoid
 import numpy as np
+
+from neuron_model import System, sigmoid
 
 
 class Network(System):

@@ -1,19 +1,16 @@
-# -*- coding: utf-8 -*-
 """
 Classes and methods for defining a graphical user interface for neural
 simulations
-
-@author: Luka
 """
 
+from collections import deque
+
 import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.widgets import Button, Slider
 
 matplotlib.use("Qt5Agg")
-import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider, Button
-import numpy as np
-
-from collections import deque
 
 
 class GUI:
@@ -79,12 +76,12 @@ class GUI:
 
         # Create empty plot
         plt.close("all")
-        
+
         # Issue with the rendering when resizing, so set a fixed size
         self.fig = plt.figure(figsize=(8.0, 6.0))
         win = self.fig.canvas.window()
         win.setFixedSize(win.size())
-        
+
         # Set block=False to allow replotting
         plt.show(block=False)
 
