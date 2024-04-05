@@ -3,6 +3,7 @@ Classes and methods for defining a graphical user interface for neural
 simulations
 """
 
+import time
 from collections import deque
 
 import matplotlib
@@ -43,6 +44,7 @@ class GUI:
         "ymax": 5,
         "sstep": 100,
         "tint": 5000,
+        "max_fps": 150,
     }
 
     def __init__(self, system, **kwargs):
@@ -171,6 +173,9 @@ class GUI:
         update_method(val)
         self.update_IV_curves()
 
+    def update_fps(self, val):
+        self.max_fps = val
+
     def add_slider(
         self, name, coords, val_min, val_max, val_init, update_method, sign=1
     ):
@@ -224,6 +229,7 @@ class GUI:
         t = 0
         self.system.set_solver("Euler", self.i_app, t, sstep, dt=self.time_step)
 
+        last_update_time = time.time()
         while plt.fignum_exists(self.fig.number):
             while self.pause_value:
                 plt.pause(0.01)
@@ -256,6 +262,12 @@ class GUI:
                 self.axsim.draw_artist(line_list[i])
             self.fig.canvas.blit(self.axsim.bbox)
             self.fig.canvas.flush_events()
+
+            # Limit max fps
+            elapsed_time = time.time() - last_update_time
+            last_update_time = time.time()
+            if elapsed_time < 1 / self.max_fps:
+                time.sleep(1 / self.max_fps - elapsed_time)
 
 
 class IV_curve:
