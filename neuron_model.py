@@ -2,12 +2,11 @@
 Single neuron circuit model
 Circuit consists of a parallel interconnection of an arbitrary number of either
 'Current' or 'Conductance' elements
-
-@author: Luka
 """
-from numpy import tanh, exp
+
 import numpy as np
-from scipy.integrate import solve_ivp, BDF
+from numpy import exp, tanh
+from scipy.integrate import BDF, solve_ivp
 
 
 def sigmoid(x, k=1):
