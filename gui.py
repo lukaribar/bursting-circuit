@@ -22,6 +22,9 @@ tf = 0
 ts = 50
 tus = 50 * 50
 
+# Default fps
+fps = 150
+
 # Define an empty neuron and then interconnect the elements
 neuron = Neuron()
 R = neuron.add_conductance(1)
@@ -55,6 +58,8 @@ s8 = gui.add_slider("$V_{off}$", [0.6, 0.1, 0.3, 0.03], -2, 2, voff_us, i4.updat
 
 s9 = gui.add_iapp_slider([0.1, 0.02, 0.5, 0.03], -3, 3)
 
-b = gui.add_button("Pause", [0.8, 0.02, 0.1, 0.03], gui.pause)
+b = gui.add_button("Pause", [0.8, 0.05, 0.1, 0.03], gui.pause)
+
+s_fps = gui.add_slider("FPS", [0.75, 0.01, 0.15, 0.03], 60, 300, fps, gui.update_fps)
 
 gui.run()
